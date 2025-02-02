@@ -23,12 +23,12 @@ class UserController extends Controller
         // 全レコード取得
         $total = $users->total();
 
-        return view('users.index', compact('users', 'keyword', 'total'));
+        return view('admin.users.index', compact('users', 'keyword', 'total'));
     }
 
     public function show(User $user)
     {
-        return view('users.show', compact('user'));
+        return view('admin.users.show', compact('user'));
     }
 
 }

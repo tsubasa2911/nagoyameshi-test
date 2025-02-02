@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RestaurantController;
+use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,9 +25,10 @@ Route::get('/', function () {
 
 require __DIR__.'/auth.php';
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth:admin'], function () {
-    Route::get('home', [Admin\HomeController::class, 'index'])->name('home');
 
+Route::middleware(['auth:admin'])->prefix('admin')->as('admin.')->group(function () {
+    Route::get('home', [Admin\HomeController::class, 'index'])->name('home'); // admin.home ルートを定義
     Route::resource('users', UserController::class);
+    Route::resource('restaurants', RestaurantController::class);
 });
 
