@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RestaurantController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin;
 
@@ -28,7 +29,9 @@ require __DIR__.'/auth.php';
 
 Route::middleware(['auth:admin'])->prefix('admin')->as('admin.')->group(function () {
     Route::get('home', [Admin\HomeController::class, 'index'])->name('home'); // admin.home ルートを定義
-    Route::resource('users', UserController::class);
-    Route::resource('restaurants', RestaurantController::class);
+    Route::resource('users', Admin\UserController::class);
+    Route::resource('restaurants', Admin\RestaurantController::class);
+
+    Route::resource('categories', Admin\CategoryController::class);
 });
 
