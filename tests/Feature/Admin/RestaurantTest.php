@@ -6,6 +6,7 @@ use App\Models\Restaurant;
 use App\Models\User;
 use App\Models\Admin;
 use App\Models\Category;
+use App\Models\RegularHoliday;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
@@ -142,7 +143,11 @@ class RestaurantTest extends TestCase
         $categories = Category::factory(3)->create();
         $category_ids = $categories->pluck('id')->toArray();
 
-        // 送信するデータ（$restaurant_dataまたは$new_restaurant_data）にcategory_idsパラメータを追加する
+        //定休日のダミーデータ作成し、それらのIDの配列を定義
+        $regular_holidays = RegularHoliday::factory()->count(3)->create();
+        $regular_holiday_ids = $regular_holidays->pluck('id')->toArray();
+
+        // 送信するデータ（$restaurant_dataまたは$new_restaurant_data）にcategory_idsと $regular_holiday_idsパラメータを追加する
         $restaurantData = [
             'name' => '新店舗',
             'description' => 'テスト',
@@ -153,15 +158,29 @@ class RestaurantTest extends TestCase
             'opening_time' => '10:00:00',
             'closing_time' => '20:00:00',
             'seating_capacity' => 50,
-            'category_ids' => $category_ids
+            'category_ids' => $category_ids,
+            'regular_holiday_ids' => $regular_holiday_ids
         ];
-
 
         $response = $this->actingAs($admin, 'admin')->post(route('admin.restaurants.store'), $restaurantData);
         // リダイレクトされたことを確認
         $response->assertRedirect(route('admin.restaurants.index'));
         // 送信したデータがrestaurantsテーブルに保存されていることを検証する
-        $this->assertDatabaseHas('restaurants', $restaurantData);
+        unset($restaurantData['category_ids']);
+        unset($restaurantData['regular_holiday_ids']);
+
+        $this->assertDatabaseHas('restaurants', [
+            'name' => $restaurantData['name'],
+            'description' => $restaurantData['description'],
+            'lowest_price' => $restaurantData['lowest_price'],
+            'highest_price' => $restaurantData['highest_price'],
+            'postal_code' => $restaurantData['postal_code'],
+            'address' => $restaurantData['address'],
+            'opening_time' => $restaurantData['opening_time'],
+            'closing_time' => $restaurantData['closing_time'],
+            'seating_capacity' => $restaurantData['seating_capacity']
+        
+        ]);
 
         // 直近のレストランIDを取得
         $restaurant = Restaurant::latest('id')->first();
@@ -172,6 +191,13 @@ class RestaurantTest extends TestCase
             $this->assertDatabaseHas('category_restaurant', [
                     'restaurant_id' => $restaurant->id,
                     'category_id' => $category_id,
+            ]);
+        }
+
+        foreach ($regular_holiday_ids as $regular_holiday_id) {
+            $this->assertDatabaseHas('regular_holiday_restaurant', [
+                    'restaurant_id' => $restaurant->id,
+                    'regular_holiday_id' => $regular_holiday_id,
             ]);
         }
     }
@@ -202,6 +228,8 @@ class RestaurantTest extends TestCase
         $admin->save();
 
         $restaurant = Restaurant::factory()->create();
+        // 定休日の作成
+        $regular_holiday = RegularHoliday::factory()->count(3)->create();
 
         $response = $this->actingAs($admin, 'admin')->get( route('admin.restaurants.edit', $restaurant));
         $response->assertStatus(200);
@@ -256,6 +284,11 @@ class RestaurantTest extends TestCase
         $categories = Category::factory(3)->create();
         $category_ids = $categories->pluck('id')->toArray();
 
+
+        //定休日のダミーデータ作成し、それらのIDの配列を定義
+        $regular_holidays = RegularHoliday::factory()->count(3)->create();
+        $regular_holiday_ids = $regular_holidays->pluck('id')->toArray();
+
         $restaurantData = [
             'name' => '更新店舗',
             'description' => 'テスト',
@@ -266,16 +299,19 @@ class RestaurantTest extends TestCase
             'opening_time' => '10:00:00',
             'closing_time' => '20:00:00',
             'seating_capacity' => '50',
-            'category_ids' => $category_ids    
+            'category_ids' => $category_ids,
+            'regular_holidays' => $regular_holidays   
         ];
 
-        $response = $this->actingAs($admin, 'admin')->put(route('admin.restaurants.update', $restaurant->id, $restaurant));
+        $response = $this->actingAs($admin, 'admin')->put(route('admin.restaurants.update', $restaurant), $restaurantData);
 
         // リダイレクトされたことを確認
         $response->assertStatus(302);
 
         // データベースが更新されていることを確認
-        $this->assertDatabaseHas('restaurants', ['id' => $restaurant->id]);
+        unset($restaurantData['category_ids'], $restaurantData['regular_holidays']);
+        
+        $this->assertDatabaseHas('restaurants', $restaurantData);
 
          // 直近のレストランIDを取得
         $restaurant = Restaurant::latest('id')->first();
@@ -286,6 +322,14 @@ class RestaurantTest extends TestCase
             $this->assertDatabaseHas('category_restaurant', [
                     'restaurant_id' => $restaurant->id,
                     'category_id' => $category_id,
+            ]);
+        }
+
+        // 定休日とレストランの関連付けが正しくされていることの確認
+        foreach ($regular_holidays as $regular_holiday) {
+            $this->assertDatabaseHas('regular_holiday_restaurant', [
+                    'restaurant_id' => $restaurant->id,
+                    'regular_holiday' => $regular_holidays,
             ]);
         }
     }
