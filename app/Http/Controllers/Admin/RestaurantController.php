@@ -37,8 +37,8 @@ class RestaurantController extends Controller
     public function create(Request $request) 
     {
         $categories =Category::all();
-        $regular_holiday =RegularHoliday::all();
-        return view('admin.restaurants.create', compact('categories', 'regular_holiday'));
+        $regular_holidays =RegularHoliday::all();
+        return view('admin.restaurants.create', compact('categories', 'regular_holidays'));
     }
 
     public function store(Request $request) 
@@ -90,7 +90,7 @@ class RestaurantController extends Controller
         $restaurant->categories()->sync($category_ids);
 
         // HTTPリクエストから取得したregular_holiday_idsパラメータ（定休日のIDの配列）にもとづいて、regular_holiday_restaurantテーブルのデータを同期する処理
-        $regular_holiday_ids = array_filter($request->input('regular_holiday_ids'));
+        $regular_holiday_ids = $request->input('regular_holiday_ids') ? array_filter($request->input('regular_holiday_ids')) : [];
         $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
 
@@ -100,11 +100,11 @@ class RestaurantController extends Controller
     
     public function edit(Restaurant $restaurant) {
         $categories =Category::all();
-        $regular_holiday =RegularHoliday::all();
+        $regular_holidays =RegularHoliday::all();
 
         // 設定されたカテゴリのIDを配列化する
         $category_ids = $restaurant->categories->pluck('id')->toArray();
-        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holiday'));
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holidays'));
     }
 
     public function update(Request $request, Restaurant $restaurant) {
@@ -151,7 +151,7 @@ class RestaurantController extends Controller
             $restaurant->categories()->sync($category_ids);
 
              // HTTPリクエストから取得したregular_holiday_idsパラメータ（定休日のIDの配列）にもとづいて、regular_holiday_restaurantテーブルのデータを同期する処理
-            $regular_holiday_ids = array_filter($request->input('regular_holiday_ids'));
+            $regular_holiday_ids = $request->input('regular_holiday_ids') ? array_filter($request->input('regular_holiday_ids')) : [];
             $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
             // 店舗詳細ページへリダイレクトし、フラッシュメッセージを設定

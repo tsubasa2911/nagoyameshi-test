@@ -228,9 +228,8 @@ class RestaurantTest extends TestCase
         $admin->save();
 
         $restaurant = Restaurant::factory()->create();
-        // 定休日の作成
-        $regular_holiday = RegularHoliday::factory()->count(3)->create();
-
+        $regular_holidays = RegularHoliday::factory()->count(3)->create();
+        
         $response = $this->actingAs($admin, 'admin')->get( route('admin.restaurants.edit', $restaurant));
         $response->assertStatus(200);
     }
@@ -300,7 +299,7 @@ class RestaurantTest extends TestCase
             'closing_time' => '20:00:00',
             'seating_capacity' => '50',
             'category_ids' => $category_ids,
-            'regular_holidays' => $regular_holidays   
+            'regular_holiday_ids' => $regular_holiday_ids   
         ];
 
         $response = $this->actingAs($admin, 'admin')->put(route('admin.restaurants.update', $restaurant), $restaurantData);
@@ -309,7 +308,7 @@ class RestaurantTest extends TestCase
         $response->assertStatus(302);
 
         // データベースが更新されていることを確認
-        unset($restaurantData['category_ids'], $restaurantData['regular_holidays']);
+        unset($restaurantData['category_ids'], $restaurantData['regular_holiday_ids']);
         
         $this->assertDatabaseHas('restaurants', $restaurantData);
 
@@ -329,7 +328,7 @@ class RestaurantTest extends TestCase
         foreach ($regular_holidays as $regular_holiday) {
             $this->assertDatabaseHas('regular_holiday_restaurant', [
                     'restaurant_id' => $restaurant->id,
-                    'regular_holiday' => $regular_holidays,
+                    'regular_holiday_id' => $regular_holiday->id,
             ]);
         }
     }
