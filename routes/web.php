@@ -8,7 +8,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\TermController;
-use App\Http\Controllers\Admin;
+use App\Http\Controllers\AdminController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,3 +39,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->as('admin.')->group(function
     Route::resource('terms', Admin\TermController::class);
 });
 
+Route::group(['middleware' => 'guest:admin'], function () {
+    // トップページ
+    Route::get('/', [HomeController::class, 'index'])->name('user.home');
+});

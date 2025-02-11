@@ -49,6 +49,8 @@ class CompanyTest extends TestCase
         $admin->password = Hash::make('nagoyameshi');
         $admin->save();
 
+        $company = Company::factory()->create();
+
 
         $response = $this->actingAs($admin, 'admin')->get(route('admin.company.index')); // 管理者ユーザーで会社概要ページにアクセス
         $response->assertStatus(200); // 200 OK
@@ -59,7 +61,7 @@ class CompanyTest extends TestCase
     public function test_guest_cannot_access_admin_company_edit_page()
     {
         $company = Company::factory()->create();
-        $response = $this->get(route('admin.company.edit', $company->id)); 
+        $response = $this->get(route('admin.company.edit', $company)); 
         $response->assertRedirect(route('admin.login'));
     }
 
@@ -69,7 +71,7 @@ class CompanyTest extends TestCase
         $user = User::factory()->create();
         $company = Company::factory()->create();
 
-        $response = $this->actingAs($user)->get(route('admin.company.edit', $company->id)); 
+        $response = $this->actingAs($user)->get(route('admin.company.edit', $company)); 
         $response->assertRedirect(route('admin.login'));
     }
 
@@ -83,7 +85,7 @@ class CompanyTest extends TestCase
 
         $company = Company::factory()->create();
 
-        $response = $this->actingAs($admin, 'admin')->get(route('admin.company.edit', $company->id)); // 管理者ユーザーで会社概要編集ページにアクセス
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.company.edit', $company)); // 管理者ユーザーで会社概要編集ページにアクセス
         $response->assertStatus(200); // 200 OK
     }
 

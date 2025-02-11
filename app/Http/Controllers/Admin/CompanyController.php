@@ -9,14 +9,14 @@ class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        $companies = Company::all();
-        return view ('admin.company.index', compact('companies'));
+        $company = Company::first();
+        return view ('admin.company.index', compact('company'));
     }
 
     public function edit(Company $company)
     {
-        $companies = Company::all();
-        return view ('admin.company.edit', compact('companies'));
+        $company = Company::first();
+        return view ('admin.company.edit',  compact('company'));
     }
 
     public function update(Request $request, Company $company)
